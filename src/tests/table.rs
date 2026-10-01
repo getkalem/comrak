@@ -455,6 +455,38 @@ fn table_missing_cell_sourcepos() {
 }
 
 #[test]
+fn table_missing_cell_without_pipes_sourcepos() {
+    // A row with no closing pipe has nothing after its last cell; the
+    // autocompleted cell sits on the row's last column, not past it.
+    assert_ast_match!(
+        [extension.table],
+        "|a|b|\n"
+        "|-|-|\n"
+        "c\n"
+        ,
+        (document (1:1-3:1) [
+            (table (1:1-3:1) [
+                (table_row (1:1-1:5) [
+                    (table_cell (1:2-1:2) [
+                        (text (1:2-1:2) "a")
+                    ])
+                    (table_cell (1:4-1:4) [
+                        (text (1:4-1:4) "b")
+                    ])
+                ])
+                (table_row (3:1-3:1) [
+                    (table_cell (3:1-3:1) [
+                        (text (3:1-3:1) "c")
+                    ])
+                    (table_cell (3:1-3:1)
+                    )
+                ])
+            ])
+        ])
+    );
+}
+
+#[test]
 fn table_missing_cell_with_text_sourcepos() {
     assert_ast_match!(
         [extension.table],

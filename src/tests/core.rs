@@ -869,6 +869,34 @@ fn listitem_sourcepos_multiline_2() {
 }
 
 #[test]
+fn listitem_sourcepos_closed_after_list() {
+    // The HTML block closes the list before its last item; the item must
+    // still end on its own text, not at column 0 of the blank line.
+    assert_ast_match!(
+        [],
+        "- foo\n"
+        "- bar\n"
+        "\n"
+        "<!-- -->\n",
+        (document (1:1-4:8) [
+            (list (1:1-2:5) [
+                (item (1:1-1:5) [
+                    (paragraph (1:3-1:5) [
+                        (text (1:3-1:5) "foo")
+                    ])
+                ])
+                (item (2:1-2:5) [
+                    (paragraph (2:3-2:5) [
+                        (text (2:3-2:5) "bar")
+                    ])
+                ])
+            ])
+            (html_block (4:1-4:8) "<!-- -->\n")
+        ])
+    );
+}
+
+#[test]
 fn emphasis_sourcepos_double_1() {
     assert_ast_match!(
         [],

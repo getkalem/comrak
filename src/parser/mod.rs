@@ -2227,6 +2227,16 @@ where
                 }
                 nl.tight = self.determine_list_tight(node);
             }
+            NodeValue::Item(..) => {
+                // An item is finalised after its list when the line that
+                // closes the list doesn't fit in it (`add_child` closes the
+                // list first), so the list's column-0 fix never reaches it.
+                if ast.sourcepos.end.column == 0 {
+                    ast.sourcepos.end = self
+                        .fix_zero_end_columns(node)
+                        .unwrap_or(ast.sourcepos.start);
+                }
+            }
             NodeValue::FootnoteDefinition(_) => {
                 if let Some(candidate_end) = self.fix_zero_end_columns(node) {
                     ast.sourcepos.end = candidate_end;

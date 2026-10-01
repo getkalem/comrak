@@ -190,11 +190,15 @@ fn try_opening_row<'a>(
         last_column = cell_ast.sourcepos.end.column;
     }
 
+    // Autocompleted (empty) cells start and end just after the last parsed
+    // cell, but never past the row: without a closing pipe there is nothing
+    // after it, so they sit on the row's last column.
+    let row_end = new_row.data().sourcepos.end.column;
+    let empty_column = min(last_column + 1, row_end);
     for _ in parsed_cells..alignments.len() {
-        let cell_node = parser.add_child(new_row, NodeValue::TableCell, last_column + 1);
-        // for autocompleted (empty) cells, set end column equal to start
+        let cell_node = parser.add_child(new_row, NodeValue::TableCell, empty_column);
         let cell_ast = &mut cell_node.data_mut();
-        cell_ast.sourcepos.end.column = last_column + 1;
+        cell_ast.sourcepos.end.column = empty_column;
     }
 
     let offset = line.len() - parser.offset - newlines_of(line);
